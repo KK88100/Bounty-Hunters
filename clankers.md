@@ -41,3 +41,4 @@ Automated tracking of all Clankers PR contributors.
 | lycaki | 1 | 2026-05-13 |
 | kingzzoov-ctrl | 1 | 2026-05-13 |
 | AidenPeerce | 1 | 2026-05-13 |
+| SimplyRayYZL | 1 | 2026-05-13 |
