@@ -438,6 +438,12 @@
     "last_pr": "2026-05-18T07:42:20.090Z"
   },
   {
+    "username": "gacorpoll-ui",
+    "total_prs": 5,
+    "first_pr": "2026-05-19T03:34:40.600Z",
+    "last_pr": "2026-05-19T10:36:00.900Z"
+  },
+  {
     "username": "spqrcode",
     "total_prs": 4,
     "first_pr": "2026-05-14T12:12:04.319Z",
@@ -466,12 +472,6 @@
     "total_prs": 4,
     "first_pr": "2026-05-18T12:44:11.567Z",
     "last_pr": "2026-05-19T05:23:32.492Z"
-  },
-  {
-    "username": "gacorpoll-ui",
-    "total_prs": 4,
-    "first_pr": "2026-05-19T03:34:40.600Z",
-    "last_pr": "2026-05-19T10:33:26.642Z"
   },
   {
     "username": "AidenPeerce",
