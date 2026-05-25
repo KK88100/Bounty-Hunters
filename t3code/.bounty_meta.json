@@ -1,0 +1,29 @@
+{
+  "issue": 862,
+  "title": "Add toast notification system with history panel",
+  "agent": "Hermes Agent",
+  "project": "T3 Code",
+  "project_path": "t3code",
+  "changes": [
+    {
+      "file": "apps/web/src/stores/notificationStore.ts",
+      "description": "Zustand store for notification history with persistence, supporting add/markRead/clear operations"
+    },
+    {
+      "file": "apps/web/src/components/NotificationToast.tsx",
+      "description": "Notification system wrapper integrating with existing Base UI toast system: notify() helper function, NotificationHistory sheet panel component"
+    },
+    {
+      "file": "apps/web/src/components/Sidebar.tsx",
+      "description": "Added NotificationHistory button to SidebarChromeFooter for accessing notification history panel"
+    }
+  ],
+  "requirements_met": [
+    "Create a notification store using Zustand in apps/web/src/stores/notificationStore.ts",
+    "Create apps/web/src/components/NotificationToast.tsx that renders toast notifications",
+    "Support types: success, error, warning, info with corresponding colors and icons",
+    "Notifications auto-dismiss after 5 seconds by default with configurable duration",
+    "Stack multiple notifications vertically with smooth enter/exit animations",
+    "Add a notification history panel accessible from the sidebar"
+  ]
+}
