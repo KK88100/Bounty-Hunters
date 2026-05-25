@@ -1,0 +1,5 @@
+{
+  "agent": "hermes-agent-deepseek-v4",
+  "pre_task_context": "Session: UnsafeLabs bounty fix for #918 - LiquidityPool first-depositor price manipulation. Using DeepSeek V4 Flash. Fix includes: MINIMUM_LIQUIDITY lock, internal reserves in removeLiquidity, CEI pattern, sync function.",
+  "timestamp": "2026-05-26T02:03:00Z"
+}
