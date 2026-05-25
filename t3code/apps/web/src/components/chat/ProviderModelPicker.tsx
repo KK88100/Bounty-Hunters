@@ -3,7 +3,7 @@ import {
   type ProviderDriverKind,
   type ResolvedKeybindingsConfig,
 } from "@t3tools/contracts";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { VariantProps } from "class-variance-authority";
 import { ChevronDownIcon } from "lucide-react";
 import { Button, buttonVariants } from "../ui/button";
@@ -19,6 +19,41 @@ import {
 } from "./providerIconUtils";
 import { setModelPickerOpen } from "../../modelPickerOpenState";
 import type { ProviderInstanceEntry } from "../../providerInstances";
+
+const STORAGE_KEY = "t3code:last-provider-model";
+
+type SavedSelection = {
+  instanceId: ProviderInstanceId;
+  model: string;
+};
+
+function loadSavedSelection(): SavedSelection | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SavedSelection;
+    if (parsed.instanceId && parsed.model) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSelection(instanceId: ProviderInstanceId, model: string) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ instanceId, model }));
+  } catch {
+    // localStorage may be unavailable
+  }
+}
+
+function clearSavedSelection() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage may be unavailable
+  }
+}
 
 export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
   /**
@@ -45,6 +80,28 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
 }) {
   const [uncontrolledIsMenuOpen, setUncontrolledIsMenuOpen] = useState(false);
   const isMenuOpen = props.open ?? uncontrolledIsMenuOpen;
+
+  // Restore saved selection on mount
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    const saved = loadSavedSelection();
+    if (!saved) return;
+    // Verify the saved instance still exists
+    const instanceExists = props.instanceEntries.some(
+      (entry) => entry.instanceId === saved.instanceId,
+    );
+    if (!instanceExists) return;
+    // Verify the saved model is available for that instance
+    const options = props.modelOptionsByInstance.get(saved.instanceId);
+    const modelExists = options?.some((option) => option.slug === saved.model);
+    if (!modelExists) return;
+    // Only restore if different from current
+    if (saved.instanceId !== props.activeInstanceId || saved.model !== props.model) {
+      props.onInstanceModelChange(saved.instanceId, saved.model);
+    }
+  });
 
   // Resolve the active instance entry by exact routing key. The composer
   // resolves fallbacks before rendering this component; if the selected
@@ -88,7 +145,13 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
 
   const handleInstanceModelChange = (instanceId: ProviderInstanceId, model: string) => {
     if (props.disabled) return;
+    saveSelection(instanceId, model);
     props.onInstanceModelChange(instanceId, model);
+    setIsMenuOpen(false);
+  };
+
+  const handleResetDefault = () => {
+    clearSavedSelection();
     setIsMenuOpen(false);
   };
 
@@ -181,6 +244,15 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
           onRequestClose={() => setIsMenuOpen(false)}
           onInstanceModelChange={handleInstanceModelChange}
         />
+        <div className="border-t border-border/50 px-3 py-2">
+          <button
+            type="button"
+            onClick={handleResetDefault}
+            className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            Reset to default
+          </button>
+        </div>
       </PopoverPopup>
     </Popover>
   );
