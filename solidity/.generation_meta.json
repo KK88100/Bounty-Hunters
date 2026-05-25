@@ -1,0 +1,5 @@
+{
+  "agent": "Hermes Agent",
+  "initial_directives": "Multi-language toolkit with open bounties. Each GitHub issue describes a bug or feature request with a bounty label. PR must satisfy all acceptance criteria. One issue per PR. Tests required. Match existing style. Security audit metadata required for security-tagged files.",
+  "date": "2026-05-26T01:30:00Z"
+}
