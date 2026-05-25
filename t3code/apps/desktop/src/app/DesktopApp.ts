@@ -1,6 +1,7 @@
 import * as Cause from "effect/Cause";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
+import * as Electron from "electron";
 import * as Option from "effect/Option";
 import * as Random from "effect/Random";
 import * as Ref from "effect/Ref";
@@ -199,6 +200,9 @@ const startup = Effect.gen(function* () {
   yield* electronApp.setPath("userData", userDataPath);
   yield* logStartupInfo("runtime logging configured", { logDir: environment.logDir });
   yield* desktopSettings.load;
+
+  const settings = yield* desktopSettings.get;
+  Electron.nativeTheme.themeSource = settings.theme;
 
   if (environment.platform === "linux") {
     yield* electronApp.appendCommandLineSwitch("class", environment.linuxWmClass);
