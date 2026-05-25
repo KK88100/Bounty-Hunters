@@ -1,0 +1,22 @@
+{
+  "issue": {
+    "id": 855,
+    "title": "Implement system theme following in T3 Code desktop app"
+  },
+  "branch": "fix/t3code-system-theme",
+  "pr": {
+    "url": "https://github.com/UnsafeLabs/Bounty-Hunters/pull/4712",
+    "number": 4712
+  },
+  "description": "Implemented system theme following with persistence. Added 'theme' field (DesktopTheme: 'light' | 'dark' | 'system') to DesktopSettings, persisted in settings JSON (same pattern as updateChannel). IPC setTheme handler now persists choice. Theme restored on startup from saved settings.",
+  "files_modified": [
+    "apps/desktop/src/settings/DesktopAppSettings.ts",
+    "apps/desktop/src/ipc/methods/window.ts",
+    "apps/desktop/src/app/DesktopApp.ts"
+  ],
+  "acceptance_criteria_met": [
+    "Three theme options available: light, dark, system",
+    "System mode follows OS dark/light preference in real-time",
+    "Theme choice persists across restarts"
+  ]
+}
