@@ -41,6 +41,7 @@ type SidebarContextProps = {
 type SidebarResizableOptions = {
   maxWidth?: number;
   minWidth?: number;
+  defaultWidth?: number;
   onResize?: (width: number) => void;
   shouldAcceptWidth?: (context: {
     currentWidth: number;
@@ -56,6 +57,7 @@ type SidebarResizableOptions = {
 type SidebarResolvedResizableOptions = {
   maxWidth: number;
   minWidth: number;
+  defaultWidth: number | null;
   onResize?: (width: number) => void;
   shouldAcceptWidth?: (context: {
     currentWidth: number;
@@ -194,6 +196,7 @@ function Sidebar({
     return {
       maxWidth: options.maxWidth ?? Number.POSITIVE_INFINITY,
       minWidth: options.minWidth ?? SIDEBAR_RESIZE_DEFAULT_MIN_WIDTH,
+      defaultWidth: options.defaultWidth ?? null,
       storageKey: options.storageKey ?? null,
       ...(options.onResize ? { onResize: options.onResize } : {}),
       ...(options.shouldAcceptWidth ? { shouldAcceptWidth: options.shouldAcceptWidth } : {}),
@@ -543,6 +546,25 @@ function SidebarRail({
     [onClick, open, resolvedResizable, toggleSidebar],
   );
 
+  const handleDoubleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (!resolvedResizable || !open) return;
+      const defaultWidth = resolvedResizable.defaultWidth;
+      if (defaultWidth === null) return;
+
+      const wrapper = event.currentTarget.closest<HTMLElement>("[data-slot='sidebar-wrapper']");
+      if (!wrapper) return;
+
+      wrapper.style.setProperty("--sidebar-width", `${defaultWidth}px`);
+
+      if (resolvedResizable.storageKey && typeof window !== "undefined") {
+        setLocalStorageItem(resolvedResizable.storageKey, defaultWidth, Schema.Finite);
+      }
+      resolvedResizable.onResize?.(defaultWidth);
+    },
+    [open, resolvedResizable],
+  );
+
   React.useEffect(() => {
     if (!resolvedResizable?.storageKey || typeof window === "undefined") return;
     const rail = railRef.current;
@@ -587,6 +609,7 @@ function SidebarRail({
       data-sidebar="rail"
       data-slot="sidebar-rail"
       onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
       onPointerCancel={handlePointerCancel}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

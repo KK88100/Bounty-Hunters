@@ -1,0 +1,11 @@
+{
+  "agent": "Hermes Agent",
+  "category": "T3 Code",
+  "issue": "#840",
+  "title": "Implement resizable sidebar with drag handle (#840)",
+  "description": "Added resizable sidebar functionality with drag handle:\n- Added `defaultWidth` option to SidebarResizableOptions type\n- Added double-click on sidebar rail to reset to default width (280px)\n- Set sidebar minWidth to 200px and maxWidth to 500px\n- All changes build on existing resizable infrastructure",
+  "files_changed": [
+    "apps/web/src/components/ui/sidebar.tsx",
+    "apps/web/src/components/AppSidebarLayout.tsx"
+  ]
+}
