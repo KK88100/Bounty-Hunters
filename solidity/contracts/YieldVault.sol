@@ -19,9 +19,18 @@ contract YieldVault {
 
     address public rewardDistributor;
 
+    // Precision multiplier for reward rate calculation
+    uint256 public constant PRECISION = 1e18;
+
     event Deposited(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);
+    event RewardDistributorUpdated(address indexed oldDistributor, address indexed newDistributor);
+
+    modifier onlyRewardDistributor() {
+        require(msg.sender == rewardDistributor, "Not authorized");
+        _;
+    }
 
     constructor(address _stakingToken, address _rewardToken) {
         stakingToken = IERC20(_stakingToken);
@@ -29,22 +38,31 @@ contract YieldVault {
         rewardDistributor = msg.sender;
     }
 
-    // BUG: Does not cap at periodFinish — accrues phantom rewards after period ends
+    /// @notice Returns the current reward per token, capped at periodFinish
+    /// @dev After the reward period ends, no additional rewards accrue
+    /// @dev rewardRate is stored with PRECISION (1e18) multiplier for precision
     function rewardPerToken() public view returns (uint256) {
         if (totalSupply == 0) return rewardPerTokenStored;
+
+        uint256 timeElapsed = block.timestamp < periodFinish
+            ? block.timestamp - lastUpdateTime
+            : (periodFinish > lastUpdateTime ? periodFinish - lastUpdateTime : 0);
+
+        // rewardRate already has PRECISION multiplier, no need to multiply again
         return rewardPerTokenStored + (
-            (block.timestamp - lastUpdateTime) * rewardRate * 1e18 / totalSupply
+            timeElapsed * rewardRate / totalSupply
         );
     }
 
-    // BUG: Uses uncapped rewardPerToken
+    /// @notice Returns the earned rewards for an account using the capped rewardPerToken
     function earned(address account) public view returns (uint256) {
-        return balanceOf[account] * (rewardPerToken() - userRewardPerTokenPaid[account]) / 1e18 + rewards[account];
+        return balanceOf[account] * (rewardPerToken() - userRewardPerTokenPaid[account]) / PRECISION + rewards[account];
     }
 
     modifier updateReward(address account) {
         rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = block.timestamp;
+        // Cap lastUpdateTime at periodFinish to prevent phantom accrual
+        lastUpdateTime = block.timestamp < periodFinish ? block.timestamp : periodFinish;
         if (account != address(0)) {
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
@@ -77,11 +95,31 @@ contract YieldVault {
         }
     }
 
-    // BUG: No access control — anyone can call
-    // BUG: Precision loss in rewardRate calculation
-    function notifyRewardAmount(uint256 reward, uint256 duration) external updateReward(address(0)) {
-        rewardRate = reward / duration;
+    /// @notice Notifies the contract of a new reward amount
+    /// @dev Only the authorized rewardDistributor can call this
+    /// @dev Uses PRECISION multiplier to minimize precision loss
+    function notifyRewardAmount(uint256 reward, uint256 duration) external onlyRewardDistributor updateReward(address(0)) {
+        require(duration > 0, "Duration must be > 0");
+        require(reward > 0, "Reward must be > 0");
+
+        // Add any unclaimed remaining rewards to the new reward
+        if (block.timestamp < periodFinish) {
+            uint256 remaining = periodFinish - block.timestamp;
+            uint256 leftover = remaining * rewardRate;
+            reward += leftover;
+        }
+
+        // Use high-precision reward rate: store as (reward * PRECISION) / duration
+        // This minimizes truncation error compared to raw division
+        rewardRate = (reward * PRECISION) / duration;
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp + duration;
+    }
+
+    /// @notice Updates the reward distributor address
+    function setRewardDistributor(address newDistributor) external onlyRewardDistributor {
+        require(newDistributor != address(0), "Invalid address");
+        emit RewardDistributorUpdated(rewardDistributor, newDistributor);
+        rewardDistributor = newDistributor;
     }
 }
