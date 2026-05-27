@@ -1080,6 +1080,12 @@
     "last_pr": "2026-05-27T17:03:55.783Z"
   },
   {
+    "username": "maiarowsky",
+    "total_prs": 2,
+    "first_pr": "2026-05-27T19:02:52.729Z",
+    "last_pr": "2026-05-27T19:07:54.923Z"
+  },
+  {
     "username": "ErenCankutUYSAL",
     "total_prs": 1,
     "first_pr": "2026-05-13T19:25:27Z",
@@ -1504,11 +1510,5 @@
     "total_prs": 1,
     "first_pr": "2026-05-27T17:38:55.381Z",
     "last_pr": "2026-05-27T17:38:55.381Z"
-  },
-  {
-    "username": "maiarowsky",
-    "total_prs": 1,
-    "first_pr": "2026-05-27T19:02:52.729Z",
-    "last_pr": "2026-05-27T19:02:52.729Z"
   }
 ]
