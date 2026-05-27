@@ -1092,6 +1092,12 @@
     "last_pr": "2026-05-27T20:44:41.974Z"
   },
   {
+    "username": "yunrongy424-oss",
+    "total_prs": 2,
+    "first_pr": "2026-05-27T21:32:27.183Z",
+    "last_pr": "2026-05-27T22:20:44.815Z"
+  },
+  {
     "username": "ErenCankutUYSAL",
     "total_prs": 1,
     "first_pr": "2026-05-13T19:25:27Z",
@@ -1522,11 +1528,5 @@
     "total_prs": 1,
     "first_pr": "2026-05-27T21:24:46.897Z",
     "last_pr": "2026-05-27T21:24:46.897Z"
-  },
-  {
-    "username": "yunrongy424-oss",
-    "total_prs": 1,
-    "first_pr": "2026-05-27T21:32:27.183Z",
-    "last_pr": "2026-05-27T21:32:27.183Z"
   }
 ]
