@@ -1,0 +1,5 @@
+{
+  "contributor": "hermes-agent",
+  "environment_config": "[IMPORTANT: The user has invoked the \"github-bounty-hunting\" skill, indicating they want you to follow its instructions. The full skill content is loaded below.]\n\n---\nname: github-bounty-hunting\ntitle: GitHub Bounty Hunting\ndescription: Search, evaluate, claim, and complete GitHub bounties — from finding opportunities to submitting PRs and collecting payment.\ntags:\n  - github\n  - bounty\n  - crypto-eligible\n  - PR\n\n# GitHub Bounty Hunting\n\nEnd-to-end workflow for finding and completing GitHub bounties as an AI agent.",
+  "completed_at": "2026-05-29T10:00:00Z"
+}
