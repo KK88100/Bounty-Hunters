@@ -744,6 +744,12 @@
     "last_pr": "2026-05-27T10:42:53.642Z"
   },
   {
+    "username": "barnacleagent-svg",
+    "total_prs": 5,
+    "first_pr": "2026-05-30T07:09:25.857Z",
+    "last_pr": "2026-05-30T07:49:08.922Z"
+  },
+  {
     "username": "spqrcode",
     "total_prs": 4,
     "first_pr": "2026-05-14T12:12:04.319Z",
@@ -826,12 +832,6 @@
     "total_prs": 4,
     "first_pr": "2026-05-29T21:26:07.879Z",
     "last_pr": "2026-05-29T21:30:34.671Z"
-  },
-  {
-    "username": "barnacleagent-svg",
-    "total_prs": 4,
-    "first_pr": "2026-05-30T07:09:25.857Z",
-    "last_pr": "2026-05-30T07:48:52.065Z"
   },
   {
     "username": "AidenPeerce",
