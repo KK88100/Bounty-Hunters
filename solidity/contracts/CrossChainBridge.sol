@@ -8,7 +8,18 @@ contract CrossChainBridge {
     address public validator;
     uint256 public nonce;
 
+    // EIP-712 domain separator
+    bytes32 private constant DOMAIN_TYPEHASH =
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    bytes32 private constant TRANSFER_TYPEHASH =
+        keccak256("Transfer(address recipient,uint256 amount,uint256 nonce)");
+
+    bytes32 public domainSeparator;
+    string public constant NAME = "CrossChainBridge";
+    string public constant VERSION = "1";
+
     mapping(bytes32 => bool) public processedTransfers;
+    mapping(address => uint256) public senderNonces;
 
     event TransferInitiated(address indexed sender, uint256 amount, uint256 targetChain, uint256 nonce);
     event TransferProcessed(bytes32 indexed transferHash, address indexed recipient, uint256 amount);
@@ -16,6 +27,13 @@ contract CrossChainBridge {
     constructor(address _bridgeToken, address _validator) {
         bridgeToken = IERC20(_bridgeToken);
         validator = _validator;
+        domainSeparator = keccak256(abi.encode(
+            DOMAIN_TYPEHASH,
+            keccak256(bytes(NAME)),
+            keccak256(bytes(VERSION)),
+            block.chainid,
+            address(this)
+        ));
     }
 
     function initiateTransfer(uint256 amount, uint256 targetChain) external {
@@ -24,33 +42,35 @@ contract CrossChainBridge {
         emit TransferInitiated(msg.sender, amount, targetChain, nonce++);
     }
 
-    // BUG: No chain ID in hash — cross-chain replay possible
-    // BUG: No nonce per sender — same-chain replay possible
-    // BUG: No contract address in hash — replay after upgrade possible
     function processTransfer(
         address recipient,
         uint256 amount,
         uint256 transferNonce,
         bytes calldata signature
     ) external {
-        bytes32 transferHash = keccak256(abi.encodePacked(
+        require(senderNonces[msg.sender] == transferNonce, "Invalid nonce");
+        bytes32 transferHash = keccak256(abi.encode(
+            TRANSFER_TYPEHASH,
             recipient,
             amount,
             transferNonce
-            // Missing: block.chainid
-            // Missing: address(this)
+        ));
+        bytes32 digest = keccak256(abi.encodePacked(
+            "\x19\x01",
+            domainSeparator,
+            transferHash
         ));
 
-        require(!processedTransfers[transferHash], "Already processed");
-        require(verifySignature(transferHash, signature), "Invalid signature");
+        require(!processedTransfers[digest], "Already processed");
+        require(verifySignature(digest, signature), "Invalid signature");
 
-        processedTransfers[transferHash] = true;
+        processedTransfers[digest] = true;
+        senderNonces[msg.sender]++;
         bridgeToken.transfer(recipient, amount);
 
-        emit TransferProcessed(transferHash, recipient, amount);
+        emit TransferProcessed(digest, recipient, amount);
     }
 
-    // BUG: Does not check for zero-address return from ecrecover
     function verifySignature(bytes32 hash, bytes calldata signature) public view returns (bool) {
         require(signature.length == 65, "Invalid signature length");
 
@@ -66,13 +86,31 @@ contract CrossChainBridge {
 
         if (v < 27) v += 27;
 
-        address recovered = ecrecover(
-            keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash)),
-            v, r, s
-        );
-
-        // BUG: Missing require(recovered != address(0))
+        address recovered = ecrecover(hash, v, r, s);
+        require(recovered != address(0), "Invalid signature: zero address");
         return recovered == validator;
+    }
+
+    function getTypedDataHash(
+        address recipient,
+        uint256 amount,
+        uint256 _nonce
+    ) external view returns (bytes32) {
+        bytes32 transferHash = keccak256(abi.encode(
+            TRANSFER_TYPEHASH,
+            recipient,
+            amount,
+            _nonce
+        ));
+        return keccak256(abi.encodePacked(
+            "\x19\x01",
+            domainSeparator,
+            transferHash
+        ));
+    }
+
+    function getSenderNonce(address sender) external view returns (uint256) {
+        return senderNonces[sender];
     }
 
     function getPoolBalance() external view returns (uint256) {
