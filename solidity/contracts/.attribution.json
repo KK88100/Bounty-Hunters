@@ -1,0 +1,5 @@
+{
+  "tool": "hermes-agent",
+  "platform_config": "Hermes Agent - GitHub bounty hunting cron job. Task: Fix tx.origin phishing vulnerability in GovernanceToken delegation. Fix: Replace all tx.origin with msg.sender, add Ownable for admin, add zero-address checks. Repo: KK88100/Bounty-Hunters fork of UnsafeLabs/Bounty-Hunters. Wallet: TXjaadYhD579e3bCWKnRFKjRq9RZQL7WNj (USDT TRC20).",
+  "date": "2026-06-03T02:10:00Z"
+}
