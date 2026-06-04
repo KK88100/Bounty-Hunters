@@ -9,10 +9,14 @@ contract SimpleSwap {
     uint256 public reserveA;
     uint256 public reserveB;
     uint256 public fee; // basis points, e.g. 30 = 0.3%
+    uint256 public constant FEE_DENOMINATOR = 10000;
+    uint256 public constant PRECISION = 1e18;
 
     event Swap(address indexed user, address tokenIn, uint256 amountIn, uint256 amountOut);
 
     constructor(address _tokenA, address _tokenB, uint256 _fee) {
+        require(_tokenA != address(0) && _tokenB != address(0), "Invalid token address");
+        require(_fee < FEE_DENOMINATOR, "Fee too high");
         tokenA = IERC20(_tokenA);
         tokenB = IERC20(_tokenB);
         fee = _fee;
@@ -25,10 +29,8 @@ contract SimpleSwap {
         reserveB += amountB;
     }
 
-    // BUG: No minAmountOut parameter — vulnerable to sandwich attacks
-    // BUG: No deadline parameter — stale transactions can be executed
-    // BUG: Fee calculation truncates to zero for small amounts
-    function swap(address tokenIn, uint256 amountIn) external returns (uint256 amountOut) {
+    function swap(address tokenIn, uint256 amountIn, uint256 minAmountOut, uint256 deadline) external returns (uint256 amountOut) {
+        require(block.timestamp <= deadline, "Expired");
         require(tokenIn == address(tokenA) || tokenIn == address(tokenB), "Invalid token");
         require(amountIn > 0, "Amount must be > 0");
 
@@ -39,11 +41,14 @@ contract SimpleSwap {
 
         inputToken.transferFrom(msg.sender, address(this), amountIn);
 
-        uint256 feeAmount = amountIn * fee / 10000;
+        // Fixed-point fee calculation for precision
+        uint256 feeAmount = _calculateFee(amountIn);
         uint256 amountInAfterFee = amountIn - feeAmount;
 
         // constant product formula: x * y = k
         amountOut = (reserveOut * amountInAfterFee) / (reserveIn + amountInAfterFee);
+
+        require(amountOut >= minAmountOut, "Slippage exceeded");
 
         outputToken.transfer(msg.sender, amountOut);
 
@@ -58,11 +63,16 @@ contract SimpleSwap {
         emit Swap(msg.sender, tokenIn, amountIn, amountOut);
     }
 
+    function _calculateFee(uint256 amount) internal view returns (uint256) {
+        // Use fixed-point math with PRECISION to avoid truncation on small amounts
+        return (amount * fee * PRECISION / FEE_DENOMINATOR) / PRECISION;
+    }
+
     function getAmountOut(address tokenIn, uint256 amountIn) external view returns (uint256) {
         bool isTokenA = tokenIn == address(tokenA);
         uint256 reserveIn = isTokenA ? reserveA : reserveB;
         uint256 reserveOut = isTokenA ? reserveB : reserveA;
-        uint256 feeAmount = amountIn * fee / 10000;
+        uint256 feeAmount = _calculateFee(amountIn);
         uint256 amountInAfterFee = amountIn - feeAmount;
         return (reserveOut * amountInAfterFee) / (reserveIn + amountInAfterFee);
     }
